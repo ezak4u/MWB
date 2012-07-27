@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html manifest="cache.manifest">
+<head>
+<link rel="stylesheet" href="jquery.mobile-1.1.1.css">
+<script src="jquery-1.7.2.min.js"></script>
+<script src="jquery.mobile-1.1.1.js"></script>
+<script>
+	function saveCountries(countries) {
+		var countriesString = "";
+		for ( var i = 0; i < countries.length; i++) {
+			if (i == countries.length - 1)
+				countriesString += countries[i];
+			else
+				countriesString += countries[i] + ",";
+		}
+		localStorage.setItem("countries", countriesString);
+	}
+	function saveCredentials(userName, password) {
+		localStorage.setItem("username", userName);
+		localStorage.setItem("password", password);
+	}
+	function login() {
+		var userName = $("#userNameText").val();
+		var password = $("#passwordText").val();
+		var url = "login.jsp?username=" + userName + "&password=" + password;
+		$.getJSON(url, function(response) {
+			if (response.authentication == "Success") {
+				var countries = response.countries;
+				populateCountriesList(countries);
+				if ($("#rememberChk").is(":checked")) {
+					saveCredentials(userName, password);
+					saveCountries(response.countries);
+				}
+			} else {
+				alert("Authentication failed");
+			}
+		});
+	}
+	function populateCountriesList(countries) {
+		for ( var i = 0; i < countries.length; i++) {
+			var li = "<li>";
+			li += countries[i]
+			li += "</li>";
+			$("#countriesList").append(li);
+		}
+		$.mobile.changePage("#countriesScreen");
+		$("#countriesList").listview("refresh");
+	}
+	function loadCountriesFromLocalStorage() {
+		var countriesString = localStorage.getItem("countries");
+		var countries = countriesString.split(",");
+		populateCountriesList(countries);
+	}
+	function logout() {
+		if (localStorage.getItem("username") != null
+				&& localStorage.getItem("username") != "") {
+			localStorage.removeItem("username");
+			localStorage.removeItem("password");
+			localStorage.removeItem("countries");
+		}
+		$("#countriesList").html("");
+		$.mobile.changePage("#loginScreen");
+	}
+	$().ready(
+			function() {
+				window.applicationCache.addEventListener("checking",function(){
+					alert("[ NOW U r in OFFline]");
+				});
+				if (localStorage.getItem("username") != null
+						&& localStorage.getItem("username") != "") {
+					loadCountriesFromLocalStorage();
+				}				
+				$("#loginBtn").on("click", login);
+				$("#logoutLink").on("click", logout);
+			});
+</script>
+</head>
+<body>
+	<div data-role="page" id="loginScreen">
+		<div data-role="header">
+			<h1>Welcome to Banca Sella</h1>
+		</div>
+		<div data-role="content">
+			<div data-role="fieldcontain">
+				<label>User name</label> <input type="text" id="userNameText">
+			</div>
+			<div data-role="fieldcontain">
+				<label>Password</label> <input type="password" id="passwordText">
+			</div>
+			<div data-role="controlgroup">
+				<input data-type="horizontal" data-mini="true" type="checkbox"
+					id="rememberChk"> <label for="rememberChk">Remember
+					me</label>
+			</div>
+			<div data-role="button" id="loginBtn">Login</div>
+		</div>
+		<div data-role="footer">
+			<p>Copyrights reserved, 2012.</p>
+		</div>
+	</div>
+	<div data-role="page" id="countriesScreen">
+		<div data-role="header">
+			<h1>Countries</h1>
+			<a data-theme="c" id="logoutLink">Logout</a>
+		</div>
+		<div data-role="content">
+			<ul data-role="listview" id="countriesList">
+			</ul>			
+		</div>
+		<p id='errorId'> </p>
+		<div data-role="footer">
+			<p>Copyrights reserved, 2012.</p>
+		</div>
+	</div>
+	<div data-role="page" id="citiesScreen">
+		<div data-role="header">
+			<h1>Countries</h1>
+		</div>
+		<div data-role="content"></div>
+		<div data-role="footer">
+			<p>Copyrights reserved, 2012.</p>
+		</div>
+	</div>
+</body>
+</html>

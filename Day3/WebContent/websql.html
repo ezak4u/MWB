@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+	function createTbl(txn) {
+		var query = "create table if not exists "
+				+ "persons(id unique,name,age)";
+		txn.executeSql(query);
+	}
+	function createRecord(txn) {
+		var query = "insert into persons values(?,?,?)";
+		txn.executeSql(query, [ 1, 'Sam', 45 ], onSuccess, onError);
+	}
+	function onSuccess(txn) {
+		alert("Successfully inserted");
+	}
+	function onError(txn, error) {
+		alert("Error inserting record " + error.message);
+	}
+	function onErrorWhileLoading(txn, error) {
+		alert("Error loading record " + error.message);
+	}
+	function displayRecords(txn) {
+		var query = "select * from persons2";
+		txn.executeSql(query, [], function(tx, results) {
+			var count = results.rows.length;
+			for ( var i = 0; i < count; i++) {
+				var row = results.rows.item(i);
+				alert(row.name + ", " + row.age);
+			}
+		}, onErrorWhileLoading);
+	}
+	var db = openDatabase("SELLA", "Training db", "1.0", 1000000);
+	db.transaction(createTbl);
+	db.transaction(createRecord);
+	db.transaction(displayRecords);
+</script>
+</head>
+<body></body>
+</html>

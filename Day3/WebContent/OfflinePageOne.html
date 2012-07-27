@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html manifest="cache.manifest">
+<head>
+<meta charset="ISO-8859-1">
+<script src="Sample.js"></script>
+<script type="text/javascript">
+window.applicationCache.addEventListener("error",function(){
+	document.getElementById('clock').value = new Date();
+});
+</script>
+</head>
+<body>
+Testing is working down
+<p>The time is: <output id="clock"></output></p>
+</body>
+</html>

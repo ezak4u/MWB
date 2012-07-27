@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="jquery.mobile-1.1.1.css">
+<script src="jquery-1.7.2.min.js"></script>
+<script src="jquery.mobile-1.1.1.js"></script>
+<script>
+	var db;
+	function saveCountries(countries) {
+		alert(countries);
+		var query = "insert into countries values(?,?)";
+		db.transaction(function(txn) {
+			for ( var i = 0; i < countries.length; i++) {
+				var query = "insert into countries values(?,?)";
+				txn.executeSql(query, [ (i + 100) + "", countries[i] ],
+						function(tx) {
+							console.log("inserted " + countries[i]);
+						});
+			}
+		});
+	}
+	function saveCredentials(userName, password) {
+		localStorage.setItem("username", userName);
+		localStorage.setItem("password", password);
+	}
+	function login() {
+		var userName = $("#userNameText").val();
+		var password = $("#passwordText").val();
+		var url = "login.jsp?username=" + userName + "&password=" + password;
+		$.getJSON(url, function(response) {
+			if (response.authentication == "Success") {
+				var countries = response.countries;
+				populateCountriesList(countries);
+				if ($("#rememberChk").is(":checked")) {
+					saveCredentials(userName, password);
+					saveCountries(response.countries);
+				}
+			} else {
+				alert("Authentication failed");
+			}
+		});
+	}
+	function populateCountriesList(countries) {
+		for ( var i = 0; i < countries.length; i++) {
+			var li = "<li>";
+			li += countries[i]
+			li += "</li>";
+			$("#countriesList").append(li);
+		}
+		$.mobile.changePage("#countriesScreen");
+		$("#countriesList").listview("refresh");
+	}
+	function loadCountriesFromLocalStorage() {
+		var countries = [];
+		var query = "select * from countries";
+		db.transaction(function(txn) {
+			txn.executeSql(query, [], function(tx, results) {
+				var count = results.rows.length;
+				for ( var i = 0; i < count; i++) {
+					var name = results.rows.item(i).name;
+					countries.push(name);
+				}
+				populateCountriesList(countries);
+			});
+		});
+	}
+	window.o
+	function removeCountries() {
+		db.transaction(function(txn) {
+			txn.executeSql("delete from countries", [], function(tx) {
+				console.log("Countries table flushed out");
+			});
+		});
+	}
+	function logout() {
+		if (localStorage.getItem("username") != null
+				&& localStorage.getItem("username") != "") {
+			localStorage.removeItem("username");
+			localStorage.removeItem("password");
+			removeCountries();
+		}
+		$("#countriesList").html("");
+		$.mobile.changePage("#loginScreen");
+	}
+	function initializeDB() {
+		db = openDatabase("lab08", "Training", "1.0", 1000000);
+		db
+				.transaction(function(txn) {
+					txn
+							.executeSql("create table if not exists countries(id unique,name)");
+				});
+	}
+	$().ready(
+			function() {
+				initializeDB();
+				if (localStorage.getItem("username") != null
+						&& localStorage.getItem("username") != "") {
+					loadCountriesFromLocalStorage();
+				}
+				$("#loginBtn").on("click", login);
+				$("#logoutLink").on("click", logout);
+			});
+</script>
+</head>
+<body>
+	<div data-role="page" id="loginScreen">
+		<div data-role="header">
+			<h1>Welcome to Banca Sella</h1>
+		</div>
+		<div data-role="content">
+			<div data-role="fieldcontain">
+				<label>User name</label> <input type="text" id="userNameText">
+			</div>
+			<div data-role="fieldcontain">
+				<label>Password</label> <input type="password" id="passwordText">
+			</div>
+			<div data-role="controlgroup">
+				<input data-type="horizontal" data-mini="true" type="checkbox"
+					id="rememberChk"> <label for="rememberChk">Remember
+					me</label>
+			</div>
+			<div data-role="button" id="loginBtn">Login</div>
+		</div>
+		<div data-role="footer">
+			<p>Copyrights reserved, 2012.</p>
+		</div>
+	</div>
+	<div data-role="page" id="countriesScreen">
+		<div data-role="header">
+			<h1>Countries</h1>
+			<a data-theme="c" id="logoutLink">Logout</a>
+		</div>
+		<div data-role="content">
+			<ul data-role="listview" id="countriesList">
+			</ul>
+		</div>
+		<div data-role="footer">
+			<p>Copyrights reserved, 2012.</p>
+		</div>
+	</div>
+	<div data-role="page" id="citiesScreen">
+		<div data-role="header">
+			<h1>Countries</h1>
+		</div>
+		<div data-role="content"></div>
+		<div data-role="footer">
+			<p>Copyrights reserved, 2012.</p>
+		</div>
+	</div>
+</body>
+</html>

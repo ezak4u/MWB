@@ -1,0 +1,19 @@
+CACHE MANIFEST
+#version 1.4
+
+CACHE:
+OfflinePageOne.html
+jquery.mobile-1.1.1.css
+jquery-1.7.2.min.js
+jquery.mobile-1.1.1.js
+sample.html
+login.jsp
+
+
+FALLBACK:
+OfflinePageTwo.html error.html
+sample.html sample.html
+login.jsp login.jsp
+
+NETWORK:
+Sample.js
